@@ -32,16 +32,20 @@ app.get('/api/notes', (req, res) => {
 });
 
 app.post('/api/notes', async (req, res) => {
-    const db = JSON.parse(await readFileAsync(DB_PATH, 'utf-8'));
-    db.push(req.body);
-    writeFileAsync(DB_PATH, JSON.stringify(db));
+    const db = usingDb(db => {
+        db.push(req.body);
+        console.log(`Added Note: "${req.body.title}"`);
+    });
+
     return res.json(db);
 });
 
 app.delete('/api/notes/:id', async (req, res) => {
-    const db = JSON.parse(await readFileAsync(DB_PATH, 'utf-8'));
-    db.splice(req.params.id);
-    writeFileAsync(DB_PATH, JSON.stringify(db));
+    const db = usingDb(db => {
+        const [ deleted ] = db.splice(req.params.id, 1);
+        console.log(`Deleted note: "${deleted.title}"`);
+    });
+
     return res.json(db);
 });
 
@@ -52,3 +56,10 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT);
+
+async function usingDb(fn) {
+    const db = JSON.parse(await readFileAsync(DB_PATH, 'utf-8'));
+    fn(db);
+    writeFileAsync(DB_PATH, JSON.stringify(db));
+    return db;
+}
