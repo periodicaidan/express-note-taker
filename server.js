@@ -49,10 +49,10 @@ app.delete('/api/notes/:id', async (req, res) => {
     return res.json(db);
 });
 
-// Fallback route thing
+// Fallback 
 // NB: This should always be the last route
 app.get('*', (req, res) => {
-    return res.sendFile('public/index.html');
+    return res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 app.listen(PORT);
